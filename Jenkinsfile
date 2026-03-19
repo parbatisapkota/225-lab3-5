@@ -3,10 +3,10 @@ pipeline {
 
     environment {
         DOCKER_CREDENTIALS_ID = 'roseaw-dockerhub'
-        DOCKER_IMAGE = 'cithit/roseaw'                                                                    //<------change this
+        DOCKER_IMAGE = 'parbatisapkota/225-lab3-5'                                                                    //<------change this
         IMAGE_TAG = "build-${BUILD_NUMBER}"
-        GITHUB_URL = 'https://github.com/miamioh-cit/225-lab3-5.git'                                          //<------change this
-        KUBECONFIG = credentials('roseaw-225')                                                         //<------change this
+        GITHUB_URL = 'https://github.com/parbatisapkota/225-lab3-5.git'                                                //<------change this
+        KUBECONFIG = credentials('roseaw-225')                                                                         //<------change this
     }
 
     stages {
@@ -45,10 +45,8 @@ pipeline {
         stage('Deploy to Dev Environment') {
             steps {
                 script {
-                    // Set up Kubernetes configuration using the specified KUBECONFIG
-                    def kubeConfig = readFile(KUBECONFIG)
                     // Update deployment-dev.yaml to use the new image tag
-                    sh "sed -i 's|${DOCKER_IMAGE}:latest|${DOCKER_IMAGE}:${IMAGE_TAG}|' deployment-dev.yaml"
+                    sh "sed -i 's|${DOCKER_IMAGE}:latest|${DOCKER_IMAGE}:${IMAGE_TAG}|g' deployment-dev.yaml"
                     sh "kubectl apply -f deployment-dev.yaml"
                 }
             }
@@ -57,10 +55,8 @@ pipeline {
        stage('Deploy to Prod Environment') {
             steps {
                 script {
-                    // Set up Kubernetes configuration using the specified KUBECONFIG
-                    //sh "ls -la"
-                    sh "sed -i 's|${DOCKER_IMAGE}:latest|${DOCKER_IMAGE}:${IMAGE_TAG}|' deployment-prod.yaml"
-                    sh "cd .."
+                    // Update deployment-prod.yaml to use the new image tag
+                    sh "sed -i 's|${DOCKER_IMAGE}:latest|${DOCKER_IMAGE}:${IMAGE_TAG}|g' deployment-prod.yaml"
                     sh "kubectl apply -f deployment-prod.yaml"
                 }
             }
@@ -74,8 +70,8 @@ pipeline {
             }
         }
     }
-    post {
 
+    post {
         success {
             slackSend color: "good", message: "Build Completed: ${env.JOB_NAME} ${env.BUILD_NUMBER}"
         }
@@ -86,5 +82,4 @@ pipeline {
             slackSend color: "danger", message: "Build Failed: ${env.JOB_NAME} ${env.BUILD_NUMBER}"
         }
     }
-}
-
+} 
